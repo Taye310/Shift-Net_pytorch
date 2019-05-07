@@ -3,6 +3,8 @@ import torch
 import util.util as util
 from .InnerShiftTripleFunction import InnerShiftTripleFunction
 
+# Has been changed for face.
+#
 class InnerShiftTriple(nn.Module):
     def __init__(self, shift_sz=1, stride=1, mask_thred=1, triple_weight=1, layer_to_last=3):
         super(InnerShiftTriple, self).__init__()
