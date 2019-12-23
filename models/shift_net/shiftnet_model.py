@@ -122,8 +122,9 @@ class ShiftNetModel(BaseModel):
 
     def set_input(self, input):
         self.image_paths = input['A_paths']
-        real_A = input['A'].to(self.device)
-        real_B = input['B'].to(self.device)
+        real_A = input['A'].to(self.device) # rgb will be mask
+        real_B = input['B'].to(self.device) # depth
+        real_C = real_A # wont be mask
         # directly load mask offline
         self.mask_global = input['M'].to(self.device).byte()
         self.mask_global = self.mask_global.narrow(1,0,1).bool()
@@ -161,6 +162,8 @@ class ShiftNetModel(BaseModel):
 
         self.real_A = real_A
         self.real_B = real_B
+        self.real_C = real_C
+        print("setinput:",self.real_B.shape)
     
 
     def set_latent_mask(self, mask_global):
@@ -174,15 +177,18 @@ class ShiftNetModel(BaseModel):
             if self.opt.add_mask2input:
                 # make it 4 dimensions.
                 # Mention: the extra dim, the masked part is filled with 0, non-mask part is filled with 1.
-                real_B = torch.cat([self.real_B, (~self.mask_global).expand(self.real_B.size(0), 1, self.real_B.size(2), self.real_B.size(3)).type_as(self.real_B)], dim=1)
+                real_C = torch.cat([self.real_C, (~self.mask_global).expand(self.real_C.size(0), 1, self.real_C.size(2), self.real_C.size(3)).type_as(self.real_C)], dim=1)
+                print(self.real_C.shape)
+                print(real_C.shape)
+                print(self.mask_global.shape)
             else:
-                real_B = self.real_B
-            self.netG(real_B) # input ground truth
+                real_C = self.real_C
+            self.netG(real_C) # input ground truth
 
 
     def forward(self):
         self.set_gt_latent()
-        self.fake_B = self.netG(self.real_A)
+        self.fake_B = self.netG(self.real_A) # rgb --> depth
 
     # Just assume one shift layer.
     def set_flow_src(self):
@@ -204,7 +210,7 @@ class ShiftNetModel(BaseModel):
     def backward_D(self):
         fake_B = self.fake_B
         # Real
-        real_B = self.real_B # GroundTruth
+        real_B = self.real_B # GroundTruth depth
 
         # Has been verfied, for square mask, let D discrinate masked patch, improves the results.
         if self.opt.mask_type == 'center' or self.opt.mask_sub_type == 'rect': 

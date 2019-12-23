@@ -3,6 +3,8 @@ from options.train_options import TrainOptions
 from data.data_loader import CreateDataLoader
 from models import create_model
 from util.visualizer import Visualizer
+import warnings
+warnings.filterwarnings("ignore")
 
 if __name__ == "__main__":
     opt = TrainOptions().parse()

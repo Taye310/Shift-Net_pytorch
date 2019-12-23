@@ -9,6 +9,7 @@ class BaseOptions():
 
     def initialize(self, parser):
         parser.add_argument('--dataroot', default='./datasets/Paris/train', help='path to training/testing images')
+        parser.add_argument('--depth_gt_root', default='./datasets/Paris/train', help='path to training/testing depth')
         parser.add_argument('--batchSize', type=int, default=1, help='input batch size')
         parser.add_argument('--loadSize', type=int, default=350, help='scale images to this size')
         parser.add_argument('--fineSize', type=int, default=256, help='then crop to this size')
