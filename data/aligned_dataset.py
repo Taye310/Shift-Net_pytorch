@@ -30,14 +30,14 @@ class AlignedDataset(BaseDataset):
         A = Image.open(A_path).convert('RGB')
         w, h = A.size
 
-        if w < h:
-            ht_1 = self.opt.loadSize * h // w
-            wd_1 = self.opt.loadSize
-            A = A.resize((wd_1, ht_1), Image.BICUBIC)
-        else:
-            wd_1 = self.opt.loadSize * w // h
-            ht_1 = self.opt.loadSize
-            A = A.resize((wd_1, ht_1), Image.BICUBIC)
+        # if w < h:
+        #     ht_1 = self.opt.loadSize * h // w
+        #     wd_1 = self.opt.loadSize
+        #     A = A.resize((wd_1, ht_1), Image.BICUBIC)
+        # else:
+        #     wd_1 = self.opt.loadSize * w // h
+        #     ht_1 = self.opt.loadSize
+        #     A = A.resize((wd_1, ht_1), Image.BICUBIC)
 
         A = self.transform(A)
         h = A.size(1)
@@ -60,7 +60,7 @@ class AlignedDataset(BaseDataset):
         mask = A.clone().zero_()
         if self.opt.offline_loading_mask:
             mask = Image.open(self.mask_paths[random.randint(0, len(self.mask_paths)-1)])
-            mask = mask.resize((self.opt.fineSize, self.opt.fineSize), Image.NEAREST)
+            # mask = mask.resize((self.opt.fineSize, self.opt.fineSize), Image.NEAREST)
             mask = transforms.ToTensor()(mask)
         
         return {'A': A, 'B': B, 'M': mask,
