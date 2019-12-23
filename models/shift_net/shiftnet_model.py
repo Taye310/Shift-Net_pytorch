@@ -49,8 +49,8 @@ class ShiftNetModel(BaseModel):
 
 
         # batchsize should be 1 for mask_global
-        self.mask_global = torch.ByteTensor(self.opt.batchSize, 1, \
-                                 opt.fineSize, opt.fineSize)
+        self.mask_global = torch.zeros((self.opt.batchSize, 1, \
+                                 opt.fineSize, opt.fineSize), dtype=torch.bool)
 
         # Here we need to set an artificial mask_global(center hole is ok.)
         self.mask_global.zero_()
@@ -126,7 +126,7 @@ class ShiftNetModel(BaseModel):
         real_B = input['B'].to(self.device)
         # directly load mask offline
         self.mask_global = input['M'].to(self.device).byte()
-        self.mask_global = self.mask_global.narrow(1,0,1)
+        self.mask_global = self.mask_global.narrow(1,0,1).bool()
 
         # create mask online
         if not self.opt.offline_loading_mask:
@@ -157,7 +157,7 @@ class ShiftNetModel(BaseModel):
         if self.opt.add_mask2input:
             # make it 4 dimensions.
             # Mention: the extra dim, the masked part is filled with 0, non-mask part is filled with 1.
-            real_A = torch.cat((real_A, (1 - self.mask_global).expand(real_A.size(0), 1, real_A.size(2), real_A.size(3)).type_as(real_A)), dim=1)
+            real_A = torch.cat((real_A, (~self.mask_global).expand(real_A.size(0), 1, real_A.size(2), real_A.size(3)).type_as(real_A)), dim=1)
 
         self.real_A = real_A
         self.real_B = real_B
@@ -174,7 +174,7 @@ class ShiftNetModel(BaseModel):
             if self.opt.add_mask2input:
                 # make it 4 dimensions.
                 # Mention: the extra dim, the masked part is filled with 0, non-mask part is filled with 1.
-                real_B = torch.cat([self.real_B, (1 - self.mask_global).expand(self.real_B.size(0), 1, self.real_B.size(2), self.real_B.size(3)).type_as(self.real_B)], dim=1)
+                real_B = torch.cat([self.real_B, (~self.mask_global).expand(self.real_B.size(0), 1, self.real_B.size(2), self.real_B.size(3)).type_as(self.real_B)], dim=1)
             else:
                 real_B = self.real_B
             self.netG(real_B) # input ground truth
