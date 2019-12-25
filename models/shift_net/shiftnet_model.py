@@ -76,7 +76,7 @@ class ShiftNetModel(BaseModel):
             if opt.gan_type == 'vanilla':
                 use_sigmoid = True  # only vanilla GAN using BCECriterion
             # don't use cGAN
-            self.netD = networks.define_D(opt.input_nc, opt.ndf,
+            self.netD = networks.define_D(1, opt.ndf,
                                           opt.which_model_netD,
                                           opt.n_layers_D, opt.norm, use_sigmoid, opt.use_spectral_norm_D, opt.init_type, self.gpu_ids, opt.init_gain)
 
@@ -133,8 +133,8 @@ class ShiftNetModel(BaseModel):
         if not self.opt.offline_loading_mask:
             if self.opt.mask_type == 'center':
                 self.mask_global.zero_()
-                self.mask_global[:, :, int(self.opt.fineSize/4) + self.opt.overlap : int(self.opt.fineSize/2) + int(self.opt.fineSize/4) - self.opt.overlap,\
-                                    int(self.opt.fineSize/4) + self.opt.overlap: int(self.opt.fineSize/2) + int(self.opt.fineSize/4) - self.opt.overlap] = 1
+                self.mask_global[:, :, int(self.opt.fineSize*3/8) + self.opt.overlap : int(self.opt.fineSize/2) + int(self.opt.fineSize/8) - self.opt.overlap,\
+                                    int(self.opt.fineSize*3/8) + self.opt.overlap: int(self.opt.fineSize/2) + int(self.opt.fineSize/8) - self.opt.overlap] = 1
                 self.rand_t, self.rand_l = int(self.opt.fineSize/4) + self.opt.overlap, int(self.opt.fineSize/4) + self.opt.overlap
             elif self.opt.mask_type == 'random':
                 self.mask_global = self.create_random_mask().type_as(self.mask_global).view(1, *self.mask_global.size()[-3:])
@@ -163,7 +163,7 @@ class ShiftNetModel(BaseModel):
         self.real_A = real_A
         self.real_B = real_B
         self.real_C = real_C
-        print("setinput:",self.real_B.shape)
+        # print("setinput:",self.real_B.shape)
     
 
     def set_latent_mask(self, mask_global):
@@ -178,9 +178,9 @@ class ShiftNetModel(BaseModel):
                 # make it 4 dimensions.
                 # Mention: the extra dim, the masked part is filled with 0, non-mask part is filled with 1.
                 real_C = torch.cat([self.real_C, (~self.mask_global).expand(self.real_C.size(0), 1, self.real_C.size(2), self.real_C.size(3)).type_as(self.real_C)], dim=1)
-                print(self.real_C.shape)
-                print(real_C.shape)
-                print(self.mask_global.shape)
+                # print(self.real_C.shape)
+                # print(real_C.shape)
+                # print(self.mask_global.shape)
             else:
                 real_C = self.real_C
             self.netG(real_C) # input ground truth
@@ -296,8 +296,8 @@ class ShiftNetModel(BaseModel):
         self.loss_tv = self.tv_criterion(self.fake_B*self.mask_global.float())
 
         # Finally, add style loss
-        vgg_ft_fakeB = self.vgg16_extractor(fake_B)
-        vgg_ft_realB = self.vgg16_extractor(real_B)
+        vgg_ft_fakeB = self.vgg16_extractor(fake_B.repeat(1,3,1,1))
+        vgg_ft_realB = self.vgg16_extractor(real_B.repeat(1,3,1,1))
         self.loss_style = 0
         self.loss_content = 0
 

@@ -5,6 +5,10 @@ from data.data_loader import CreateDataLoader
 from models import create_model
 from util.visualizer import save_images
 from util import html
+import numpy as np
+import ntpath
+import warnings
+warnings.filterwarnings("ignore")
 
 if __name__ == "__main__":
     opt = TestOptions().parse()
@@ -34,5 +38,13 @@ if __name__ == "__main__":
         visuals = model.get_current_visuals()
         img_path = model.get_image_paths()
         print('process image... %s' % img_path)
-        save_images(webpage, visuals, img_path, aspect_ratio=opt.aspect_ratio, width=opt.display_winsize)
-    webpage.save()
+        pred_depth = visuals['fake_B'][0][0].cpu().float().numpy()
+
+        short_path = ntpath.basename(img_path[0])
+        name = os.path.splitext(short_path)[0]
+        save_path = '/home/zhangtianyi/ShareFolder/data/hmd_masked/test/shift-net_depth_result/' + name + '.npy'
+        print(pred_depth.shape,save_path)
+        np.save(save_path,pred_depth)
+
+        # save_images(webpage, visuals, img_path, aspect_ratio=opt.aspect_ratio, width=opt.display_winsize)
+    # webpage.save()

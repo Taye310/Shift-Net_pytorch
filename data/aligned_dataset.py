@@ -28,9 +28,7 @@ class AlignedDataset(BaseDataset):
 
         self.transform_A = transforms.Compose(transform_list)
 
-        transform_list = [transforms.ToTensor(),
-                          transforms.Normalize((0.5, 0.5, 0.5),
-                                               (0.5, 0.5, 0.5))]
+        transform_list = [transforms.ToTensor()]
 
         self.transform_B = transforms.Compose(transform_list)
 
@@ -38,12 +36,16 @@ class AlignedDataset(BaseDataset):
         A_path = self.A_paths[index]
         A = Image.open(A_path).resize((448,448)).convert('RGB')
         w, h = A.size
+        A = np.array(A)
 
         ### A is rgb_gt, B is depth_gt
         B_path = self.B_paths[index]
-        print("a_path:",A_path,"b_path",B_path)
-        # B = Image.fromarray(np.load(B_path))
-        B = Image.open(B_path).resize((448,448)).convert('RGB')
+        # print("a_path:",A_path,"b_path",B_path)
+        B = np.load(B_path)
+        A[B==0] = 0
+        A = Image.fromarray(A)
+        B = Image.fromarray(B)
+        # B = Image.open(B_path).resize((448,448)).convert('RGB')
 
         # if w < h:
         #     ht_1 = self.opt.loadSize * h // w
@@ -66,7 +68,7 @@ class AlignedDataset(BaseDataset):
         B = B[:, h_offset:h_offset + self.opt.fineSize,
                w_offset:w_offset + self.opt.fineSize]
 
-        print("aligneddataset",B.shape)
+        # print("aligneddataset",B.shape)
         if (not self.opt.no_flip) and random.random() < 0.5:
             idx = [i for i in range(A.size(2) - 1, -1, -1)] # size(2)-1, size(2)-2, ... , 0
             idx = torch.LongTensor(idx)

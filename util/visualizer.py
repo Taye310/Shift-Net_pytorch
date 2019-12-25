@@ -104,12 +104,12 @@ class Visualizer():
                     image = util.rm_extra_dim(image) # remove the dummy dim
                     image_numpy = util.tensor2im(image)
                     label_html_row += '<td>%s</td>' % label
-                    images.append(image_numpy.transpose([2, 0, 1]))
+                    images.append(image_numpy)
                     idx += 1
                     if idx % ncols == 0:
                         label_html += '<tr>%s</tr>' % label_html_row
                         label_html_row = ''
-                white_image = np.ones_like(image_numpy.transpose([2, 0, 1])) * 255
+                white_image = np.ones_like(image_numpy) * 255
                 while idx % ncols != 0:
                     images.append(white_image)
                     label_html_row += '<td></td>'
@@ -128,7 +128,7 @@ class Visualizer():
                 idx = 1
                 for label, image in visuals.items():
                     image_numpy = util.tensor2im(image)
-                    self.vis.image(image_numpy.transpose([2, 0, 1]), opts=dict(title=label),
+                    self.vis.image(image_numpy, opts=dict(title=label),
                                    win=self.display_id + idx)
                     idx += 1
 

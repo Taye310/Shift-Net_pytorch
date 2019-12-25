@@ -12,6 +12,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import models
 from skimage.transform import resize
+from matplotlib import pyplot as plt
 
 def create_masks(opt, N=10):
     masks = []
@@ -82,16 +83,17 @@ class OptimizerMask:
 
 # Converts a Tensor into an image array (numpy)
 # |imtype|: the desired type of the converted numpy array
-def tensor2im(input_image, imtype=np.uint8):
+def tensor2im(input_image, imtype=np.float):
     if isinstance(input_image, torch.Tensor):
         image_tensor = input_image.data
     else:
         return input_image
     image_numpy = image_tensor[0].cpu().float().numpy()
-    if image_numpy.shape[0] == 1:
-        image_numpy = np.tile(image_numpy, (3, 1, 1))
-    image_numpy = (np.transpose(image_numpy, (1, 2, 0)) + 1) / 2.0 * 255.0
-    return image_numpy.astype(imtype)
+    # if image_numpy.shape[0] == 1:
+    #     image_numpy = np.tile(image_numpy, (3, 1, 1))
+    # image_numpy = np.transpose(image_numpy, (1, 2, 0))
+    # print(image_numpy[0].shape,image_numpy)
+    return image_numpy[0]
 
 # Remove dummy dim from a tensor.
 # Useful when input is 4 dims.
@@ -253,8 +255,8 @@ def cal_flag_given_mask_thred(mask, patch_size, stride, mask_thred):
 
 
 def save_image(image_numpy, image_path):
-    image_pil = Image.fromarray(image_numpy)
-    image_pil.save(image_path)
+    plt.imsave(image_path,image_numpy)
+    
 
 def info(object, spacing=10, collapse=1):
     """Print methods and doc strings.
