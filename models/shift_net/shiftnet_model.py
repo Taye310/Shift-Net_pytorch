@@ -8,6 +8,7 @@ import torchvision.transforms as transforms
 import os
 import numpy as np
 from PIL import Image
+from matplotlib import pyplot as plt
 
 class ShiftNetModel(BaseModel):
     def name(self):
@@ -54,9 +55,10 @@ class ShiftNetModel(BaseModel):
 
         # Here we need to set an artificial mask_global(center hole is ok.)
         self.mask_global.zero_()
-        self.mask_global[:, :, int(self.opt.fineSize/4) + self.opt.overlap : int(self.opt.fineSize/2) + int(self.opt.fineSize/4) - self.opt.overlap,\
-                                int(self.opt.fineSize/4) + self.opt.overlap: int(self.opt.fineSize/2) + int(self.opt.fineSize/4) - self.opt.overlap] = 1
-
+        # self.mask_global[:, :, int(self.opt.fineSize/4) + self.opt.overlap : int(self.opt.fineSize/2) + int(self.opt.fineSize/4) - self.opt.overlap,\
+        #                         int(self.opt.fineSize/4) + self.opt.overlap: int(self.opt.fineSize/2) + int(self.opt.fineSize/4) - self.opt.overlap] = 1
+        self.mask_global[:, :, int(self.opt.fineSize * 3 / 8) + self.opt.overlap: int(self.opt.fineSize / 2) + int(self.opt.fineSize / 8) - self.opt.overlap, \
+                                int(self.opt.fineSize * 3 / 8) + self.opt.overlap: int(self.opt.fineSize / 2) + int(self.opt.fineSize / 8) - self.opt.overlap] = 1
         if len(opt.gpu_ids) > 0:
             self.mask_global = self.mask_global.to(self.device)
 
@@ -135,7 +137,7 @@ class ShiftNetModel(BaseModel):
                 self.mask_global.zero_()
                 self.mask_global[:, :, int(self.opt.fineSize*3/8) + self.opt.overlap : int(self.opt.fineSize/2) + int(self.opt.fineSize/8) - self.opt.overlap,\
                                     int(self.opt.fineSize*3/8) + self.opt.overlap: int(self.opt.fineSize/2) + int(self.opt.fineSize/8) - self.opt.overlap] = 1
-                self.rand_t, self.rand_l = int(self.opt.fineSize/4) + self.opt.overlap, int(self.opt.fineSize/4) + self.opt.overlap
+                self.rand_t, self.rand_l = int(self.opt.fineSize*3/8) + self.opt.overlap, int(self.opt.fineSize*3/8) + self.opt.overlap
             elif self.opt.mask_type == 'random':
                 self.mask_global = self.create_random_mask().type_as(self.mask_global).view(1, *self.mask_global.size()[-3:])
                 # As generating random masks online are computation-heavy
@@ -189,6 +191,10 @@ class ShiftNetModel(BaseModel):
     def forward(self):
         self.set_gt_latent()
         self.fake_B = self.netG(self.real_A) # rgb --> depth
+        # plt.imshow(self.real_A[0][0].cpu().float().numpy())
+        # plt.show()
+        # plt.imshow(self.fake_B[0][0].cpu().float().numpy())
+        # plt.show()
 
     # Just assume one shift layer.
     def set_flow_src(self):

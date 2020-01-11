@@ -53,7 +53,7 @@ class UnetSkipConnectionBlock(nn.Module):
                                         kernel_size=4, stride=2,
                                         padding=1), use_spectral_norm)
             down = [downconv]
-            up = [uprelu, upconv, nn.Tanh()]
+            up = [uprelu, upconv]
             model = down + [submodule] + up
             # for the innermost, the special is `inner_nc` instead of `inner_nc*2`
         elif innermost:
