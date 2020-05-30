@@ -41,7 +41,10 @@ class AlignedDataset(BaseDataset):
         ### A is rgb_gt, B is depth_gt
         B_path = self.B_paths[index]
         # print("a_path:",A_path,"b_path",B_path)
-        B = np.load(B_path)
+
+        # B = np.load(B_path)
+        B = Image.open(B_path).resize((448,448))
+        B = np.array(B)
         A[B==0] = 0
         A = Image.fromarray(A)
         B = Image.fromarray(B)

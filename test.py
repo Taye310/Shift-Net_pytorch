@@ -7,6 +7,7 @@ from util.visualizer import save_images
 from util import html
 import numpy as np
 import ntpath
+from matplotlib import pyplot as plt
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -42,9 +43,11 @@ if __name__ == "__main__":
 
         short_path = ntpath.basename(img_path[0])
         name = os.path.splitext(short_path)[0]
-        save_path = '/home/zhangtianyi/ShareFolder/data/hmd_masked/test/shift-net_depth_result/' + name + '.npy'
+        # save_path = '/home/zhangtianyi/ShareFolder/data/hmd_masked/test/shift-net_depth_result/' + name + '.npy'
+        save_path = '/home/zhangtianyi/github/hmd/eval/eval_data/syn_set/pred_depth/' + name
         print(pred_depth.shape,save_path)
-        np.save(save_path,pred_depth)
+        np.save(save_path  + '.npy', pred_depth)
+        plt.imsave(save_path + '.png', pred_depth)
 
         # save_images(webpage, visuals, img_path, aspect_ratio=opt.aspect_ratio, width=opt.display_winsize)
     # webpage.save()

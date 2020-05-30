@@ -1,6 +1,7 @@
 def create_model(opt):
     model = None
     print(opt.model)
+
     if opt.model == 'shiftnet':
         assert (opt.dataset_mode == 'aligned' or opt.dataset_mode == 'aligned_resized')
         from models.shift_net.shiftnet_model import ShiftNetModel
